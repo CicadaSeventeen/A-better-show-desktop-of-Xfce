@@ -1,5 +1,5 @@
 # A-better-show-desktop-of-Xfce
-A better show-desktop .sh script of Xfce4, depending on xdotool and only supporting X11 but not Wayland now. There is plan to add Wayland support but not very soon maybe. 
+A better show-desktop .sh script of Xfce4, depending on xdotool and only supporting X11 for now Xfce4 only supporting it.
 Command as
   Filename --sd <time>      to show desktop
   Filename --sw <time>      to reactivate the windows minimized by --sd before
