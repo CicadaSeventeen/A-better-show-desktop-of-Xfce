@@ -1,23 +1,56 @@
-#! /bin/bash 
-FILEPATH=/.SHOWDESKTOP_DJYPKU
+#! /bin/bash
+function show_desktop(){
+    temID=$(xdotool getwindowfocus)
+    xdotool search --class xfdesktop|grep $temID &>/dev/null
+    while [[ $? -eq 1 ]]
+        do
+            sleep $1
+            xdotool windowminimize $temID
+            sudo bash -c "echo $temID >>/tmp/.window_list"
+            temID=$(xdotool getwindowfocus)
+            xdotool search --class xfdesktop|grep $temID &>/dev/null
+    done
+}
+
+function show_window(){
+    for line in $(tac /tmp/.window_list)
+    do
+        sleep $1
+        xdotool windowactivate $line &>/dev/null
+    done
+    sudo bash -c "cat /dev/null > /tmp/.window_list"
+}
+
 function auto_change(){
     temID=$(xdotool getwindowfocus)
     xdotool search --class xfdesktop|grep $temID
     tem=$?
     echo $tem &>>/home/jydeng/tem.txt
     if [ $tem == 0 ] ; then
-	    /$FILEPATH/show_window.sh $1    
+	    show_window $1    
     elif [ $tem == 1 ] ; then
-#	    /$FILEPATH/show_desktop.sh $1
+	    sudo bash -c "cat /dev/null > /tmp/.window_list"
+	    show_desktop $1
     fi
 }
 
+sudo bash -c "echo $$ >>/tmp/.display_desktop_lock"
+sleep 0.02
+[ "x$(cat /tmp/.display_desktop_lock)" == "x"$$ ] || exit 1
 for command in $1 ; do
         if [[ "$command" == "--sd" ]] ; then
-               /$FILEPATH/show_desktop.sh $2
+               show_desktop ${2:-0.02}
         elif [[ "$command" == "--sw" ]] ; then
-               /$FILEPATH/show_window.sh $2
+               show_window ${2:-0.02}
         elif [[ "$command" == "--auto" ]] ; then
-               auto_change $2
+               auto_change ${2:-0.02}
+	else
+		echo 'Please input'
+		echo '--sd time   to show desktop'
+		echo '--sw time   to show windows'
+		echo '--auto time     to automaticly change status'
+		echo 'time is the waiting time for changing window in 0second, 0.02s as default'
         fi
 done
+sudo bash -c "cat /dev/null >/tmp/.display_desktop_lock"
+exit 0
